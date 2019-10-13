@@ -15,9 +15,10 @@ module Koala
       #                 https://developers.facebook.com/docs/graph-api/securing-requests/)
       # @note If no access token is provided, you can only access some public information.
       # @return [Koala::Facebook::API] the API client
-      def initialize(access_token = Koala.config.access_token, app_secret = Koala.config.app_secret)
+      def initialize(access_token = Koala.config.access_token, app_secret = Koala.config.app_secret, &block)
         @access_token = access_token
         @app_secret = app_secret
+        @request_callback = block
       end
 
       attr_reader :access_token, :app_secret
@@ -44,7 +45,7 @@ module Koala
       def graph_call(path, args = {}, verb = "get", options = {}, &post_processing)
         # enable appsecret_proof by default
         options = {:appsecret_proof => true}.merge(options) if @app_secret
-        response = api(path, args, verb, options)
+        response = api(path, args, verb, options, &@request_callback)
 
         error = GraphErrorChecker.new(response.status, response.body, response.headers).error_if_appropriate
         raise error if error
@@ -84,7 +85,7 @@ module Koala
       # @raise [Koala::Facebook::ServerError] if Facebook returns an error (response status >= 500)
       #
       # @return a Koala::HTTPService::Response object representing the returned Facebook data
-      def api(path, args = {}, verb = "get", options = {})
+      def api(path, args = {}, verb = "get", options = {}, &block)
         # we make a copy of args so the modifications (added access_token & appsecret_proof)
         # do not affect the received argument
         args = args.dup
@@ -105,7 +106,7 @@ module Koala
         path = "/#{path}" unless path =~ /^\//
 
         # make the request via the provided service
-        result = Koala.make_request(path, args, verb, options)
+        result = Koala.make_request(path, args, verb, options, &block)
 
         if result.status.to_i >= 500
           raise Koala::Facebook::ServerError.new(result.status.to_i, result.body)

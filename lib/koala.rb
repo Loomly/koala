@@ -58,8 +58,8 @@ module Koala
   end
 
   # An convenenient alias to Koala.http_service.make_request.
-  def self.make_request(path, args, verb, options = {})
-    http_service.make_request(HTTPService::Request.new(path: path, args: args, verb: verb, options: options))
+  def self.make_request(path, args, verb, options = {}, &block)
+    http_service.make_request(HTTPService::Request.new(path: path, args: args, verb: verb, options: options), &block)
   end
 
   # we use Faraday as our main service, with mock as the other main one

@@ -32,7 +32,7 @@ module Koala
     mock_response_file_path = File.join(File.dirname(__FILE__), '..', 'fixtures', 'mock_facebook_responses.yml')
     RESPONSES = YAML.load(ERB.new(IO.read(mock_response_file_path)).result(binding))
 
-    def self.make_request(request)
+    def self.make_request(request, &block)
       if response = match_response(request.raw_path, request.raw_args, request.raw_verb, request.raw_options)
         # create response class object
         response_object = if response.is_a? String
