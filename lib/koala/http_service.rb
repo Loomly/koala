@@ -50,7 +50,7 @@ module Koala
       conn = Faraday.new(request.server, faraday_options(request.options), &(faraday_middleware || DEFAULT_MIDDLEWARE))
 
       if block_given?
-        yield(request.dup)
+        yield(request.path, request.verb, request.raw_args.dup, request.raw_options.dup)
       else
         # Log URL information
         Koala::Utils.debug "#{request.verb.upcase}: #{request.path} params: #{request.raw_args.inspect}"
